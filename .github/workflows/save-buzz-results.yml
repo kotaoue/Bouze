@@ -6,11 +6,14 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   save-results:
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'checklist/')
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'checklist/') &&
+      startsWith(github.event.pull_request.title, 'Add checklist (')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base branch
@@ -39,3 +42,16 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: buzz-results-saved
+
+      - name: Create next buzz cut PR
+        uses: kotaoue/pr-checklist-collector@v1
+        with:
+          checks: |
+            0mm
+            1mm
+            2mm
+            3mm
+            4mm
+            5mm
+          output_file: results/{yyyy-mm-dd}.json
+          assignee: kotaoue

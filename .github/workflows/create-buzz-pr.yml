@@ -1,8 +1,6 @@
 name: Create Buzz Cut PR
 
 on:
-  schedule:
-    - cron: '15 21 * * *'  # 06:15 JST (UTC+9)
   workflow_dispatch:
 
 permissions:
