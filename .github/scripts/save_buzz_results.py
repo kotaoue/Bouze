@@ -5,16 +5,16 @@ import os
 import re
 import sys
 
-title = os.environ.get('PR_TITLE', '').strip()
+raw_title = os.environ.get('PR_TITLE', '').strip()
 body = os.environ.get('PR_BODY', '')
 
-if not title:
-    print("ERROR: PR_TITLE environment variable is required", file=sys.stderr)
-    sys.exit(1)
-
-if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', title):
-    print(f"SKIP: PR_TITLE '{title}' is not in YYYY-MM-DD format")
+# PR title format from pr-checklist-collector: "Add checklist (YYYY-MM-DD)"
+m = re.search(r'\((\d{4}-\d{2}-\d{2})\)', raw_title)
+if not m:
+    print(f"SKIP: PR_TITLE '{raw_title}' does not contain a YYYY-MM-DD date")
     sys.exit(0)
+
+title = m.group(1)
 
 
 def checked_length() -> int | None:
