@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="240" height="80"
+     viewBox="0 0 240 80"
+     role="img" aria-label="— days since last buzz">
+  <title>No records yet</title>
+  <!-- Background -->
+  <rect width="240" height="80" rx="10" fill="#1a1a2e"/>
+  <!-- Clipper icon -->
+  <g transform="translate(12,12) scale(0.56)" fill="#e8b84b">
+    <path d="M 12,28 C 12,22 17,18 23,18 L 72,18 C 80,18 84,22 84,28 L 84,72 C 84,78 80,82 72,82 L 23,82 C 17,82 12,78 12,72 Z M 28,50 m -6,0 a 6,6 0 1,0 12,0 a 6,6 0 1,0 -12,0 Z M 84,24 L 90,24 L 90,76 L 84,76 Z M 90,28 L 96,28 L 96,35 L 90,35 Z M 90,39 L 96,39 L 96,46 L 90,46 Z M 90,50 L 98,50 L 98,57 L 90,57 Z M 90,61 L 96,61 L 96,68 L 90,68 Z " fill-rule="evenodd"/>
+  </g>
+  <!-- Days count (large) -->
+  <text x="82" y="36"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="36" font-weight="700"
+        fill="#f5d98b" dominant-baseline="middle">— days</text>
+  <!-- Label (small) -->
+  <text x="82" y="58"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="12" font-weight="400"
+        fill="#a89060" dominant-baseline="middle">since last buzz</text>
+</svg>
