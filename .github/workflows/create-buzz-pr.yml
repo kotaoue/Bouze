@@ -21,17 +21,22 @@ jobs:
         run: |
           DATE=$(date +%Y-%m-%d)
           BRANCH="checklist/${DATE}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "${BRANCH}"
-          git push origin "${BRANCH}"
-          gh pr create \
-            --title "Add checklist (${DATE})" \
-            --body "- [ ] 0mm
+          BODY="- [ ] 0mm
 - [ ] 1mm
 - [ ] 2mm
 - [ ] 3mm
 - [ ] 4mm
-- [ ] 5mm" \
+- [ ] 5mm"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          mkdir -p checklists
+          echo "${BODY}" > "checklists/${DATE}.md"
+          git add "checklists/${DATE}.md"
+          git commit -m "Add checklist (${DATE})"
+          git push origin "${BRANCH}"
+          gh pr create \
+            --title "Add checklist (${DATE})" \
+            --body "${BODY}" \
             --base main \
             --assignee kotaoue
