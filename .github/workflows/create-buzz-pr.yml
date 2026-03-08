@@ -15,26 +15,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create next buzz cut PR
+      - name: Commit checklist branch
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          echo "DATE=${DATE}" >> "$GITHUB_ENV"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "checklist/${DATE}"
+          mkdir -p temp
+          echo "${DATE}" >> temp/reserved.md
+          git add temp/reserved.md
+          git commit -m "Add checklist (${DATE})"
+          git push origin "checklist/${DATE}"
+
+      - name: Create PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          DATE=$(date +%Y-%m-%d)
-          BRANCH="checklist/${DATE}"
           BODY="- [ ] 0mm
 - [ ] 1mm
 - [ ] 2mm
 - [ ] 3mm
 - [ ] 4mm
 - [ ] 5mm"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "${BRANCH}"
-          mkdir -p temp
-          echo "${DATE}" >> temp/reserved.md
-          git add temp/reserved.md
-          git commit -m "Add checklist (${DATE})"
-          git push origin "${BRANCH}"
           gh pr create \
             --title "Add checklist (${DATE})" \
             --body "${BODY}" \
