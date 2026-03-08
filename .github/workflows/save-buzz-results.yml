@@ -1,0 +1,36 @@
+name: Save Buzz Cut Results
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  save-results:
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'checklist/') &&
+      startsWith(github.event.pull_request.title, 'Add checklist (')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect checklist and save results
+        uses: kotaoue/pr-checklist-collector@v1
+        with:
+          output_file: results/{yyyy-mm-dd}.json
+          pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
+
+      - name: Trigger badge generation
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: buzz-results-saved
+
+  create-next-pr:
+    needs: save-results
+    uses: ./.github/workflows/create-buzz-pr.yml
+    permissions:
+      contents: write
+      pull-requests: write

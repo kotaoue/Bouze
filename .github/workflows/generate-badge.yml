@@ -1,0 +1,33 @@
+name: Generate Buzz Badge
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 03:00 JST (UTC+9)
+  push:
+    branches: [main]
+    paths:
+      - 'results/*.json'
+  repository_dispatch:
+    types: [buzz-results-saved]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate badge SVG
+        run: python3 .github/scripts/generate_badge.py
+
+      - name: Commit and push badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/badge.svg
+          git diff --cached --quiet || git commit -m "Update buzz badge"
+          git push
