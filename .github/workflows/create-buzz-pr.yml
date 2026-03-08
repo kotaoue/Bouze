@@ -1,0 +1,37 @@
+name: Create Buzz Cut PR
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create next buzz cut PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          BRANCH="checklist/${DATE}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          git push origin "${BRANCH}"
+          gh pr create \
+            --title "Add checklist (${DATE})" \
+            --body "- [ ] 0mm
+- [ ] 1mm
+- [ ] 2mm
+- [ ] 3mm
+- [ ] 4mm
+- [ ] 5mm" \
+            --base main \
+            --assignee kotaoue
