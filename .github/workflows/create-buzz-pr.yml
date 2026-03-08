@@ -19,6 +19,11 @@ jobs:
         run: |
           DATE=$(date +%Y-%m-%d)
           echo "DATE=${DATE}" >> "$GITHUB_ENV"
+          if git ls-remote --heads origin "checklist/${DATE}" | grep -q .; then
+            echo "Branch checklist/${DATE} already exists on remote, skipping."
+            echo "BRANCH_EXISTS=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "checklist/${DATE}"
@@ -29,6 +34,7 @@ jobs:
           git push origin "checklist/${DATE}"
 
       - name: Create PR
+        if: env.BRANCH_EXISTS != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
