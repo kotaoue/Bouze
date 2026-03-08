@@ -16,26 +16,11 @@ jobs:
       startsWith(github.event.pull_request.title, 'Add checklist (')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout base branch
-        uses: actions/checkout@v4
+      - name: Collect checklist and save results
+        uses: kotaoue/pr-checklist-collector@v1
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
-
-      - name: Parse checkboxes and save results
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: python3 .github/scripts/save_buzz_results.py
-
-      - name: Commit and push results
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add results/
-          git diff --cached --quiet || git commit -m "Save buzz cut results for ${PR_TITLE//[^0-9-]/}"
-          git push
+          output_file: results/{yyyy-mm-dd}.json
+          pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
 
       - name: Trigger badge generation
         uses: peter-evans/repository-dispatch@v3
@@ -43,15 +28,28 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: buzz-results-saved
 
-      - name: Create next buzz cut PR
-        uses: kotaoue/pr-checklist-collector@v1
+      - name: Checkout base branch
+        uses: actions/checkout@v4
         with:
-          checks: |
-            0mm
-            1mm
-            2mm
-            3mm
-            4mm
-            5mm
-          output_file: results/{yyyy-mm-dd}.json
-          assignee: kotaoue
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Create next buzz cut PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          BRANCH="checklist/${DATE}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          git push origin "${BRANCH}"
+          gh pr create \
+            --title "Add checklist (${DATE})" \
+            --body "- [ ] 0mm
+- [ ] 1mm
+- [ ] 2mm
+- [ ] 3mm
+- [ ] 4mm
+- [ ] 5mm" \
+            --base main \
+            --assignee kotaoue

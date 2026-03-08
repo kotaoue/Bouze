@@ -22,12 +22,13 @@ BADGE_HEIGHT = 80
 
 
 def load_last_buzz_date() -> date | None:
-    """Return the most recent date that has a recorded buzz cut (length_mm not None)."""
+    """Return the most recent date that has a recorded buzz cut (any checkbox checked)."""
     latest: date | None = None
     for path in RESULTS_DIR.glob("????-??-??.json"):
         try:
             obj = json.loads(path.read_text(encoding="utf-8"))
-            if obj.get("length_mm") is None:
+            checks = obj.get("checks", {})
+            if not any(checks.values()):
                 continue
             d = date.fromisoformat(obj["date"])
             if latest is None or d > latest:
