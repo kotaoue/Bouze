@@ -32,12 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          BODY="- [ ] 0mm
-- [ ] 1mm
-- [ ] 2mm
-- [ ] 3mm
-- [ ] 4mm
-- [ ] 5mm"
+          BODY=$'- [ ] 0mm\n- [ ] 1mm\n- [ ] 2mm\n- [ ] 3mm\n- [ ] 4mm\n- [ ] 5mm'
           gh pr create \
             --title "Add checklist (${DATE})" \
             --body "${BODY}" \
