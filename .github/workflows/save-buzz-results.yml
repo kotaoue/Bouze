@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Collect checklist and save results
-        uses: kotaoue/pr-checklist-collector@v1
+        uses: kotaoue/pr-checklist-collector@main
         with:
           output_file: results/{yyyy-mm-dd}.json
           pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
