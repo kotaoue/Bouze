@@ -3,12 +3,6 @@ name: Save Buzz Cut Results
 on:
   pull_request:
     types: [closed]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to process (e.g. 42)'
-        required: true
-        type: number
 
 permissions:
   contents: write
@@ -17,25 +11,11 @@ permissions:
 jobs:
   save-results:
     if: >-
-      (github.event_name == 'workflow_dispatch') ||
-      (github.event.pull_request.merged == true &&
+      github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'checklist/') &&
-      startsWith(github.event.pull_request.title, 'Add checklist ('))
+      startsWith(github.event.pull_request.title, 'Add checklist (')
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare event payload for manual dispatch
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
-            --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}' \
-            > /tmp/pr_event.json || {
-            echo "::error::Failed to fetch PR #${{ inputs.pr_number }}. Verify the PR number exists and is accessible."
-            exit 1
-          }
-          echo "GITHUB_EVENT_PATH=/tmp/pr_event.json" >> $GITHUB_ENV
-
       - name: Collect checklist and save results
         uses: kotaoue/pr-checklist-collector@main
         with:
@@ -50,7 +30,6 @@ jobs:
 
   create-next-pr:
     needs: save-results
-    if: github.event_name != 'workflow_dispatch'
     uses: ./.github/workflows/create-buzz-pr.yml
     permissions:
       contents: write
