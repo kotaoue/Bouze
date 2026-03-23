@@ -22,11 +22,10 @@ jobs:
         run: |
           gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
             --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}' \
-            > /tmp/pr_event.json || {
+            > "$GITHUB_EVENT_PATH" || {
             echo "::error::Failed to fetch PR #${{ inputs.pr_number }}. Verify the PR number exists and is accessible."
             exit 1
           }
-          echo "GITHUB_EVENT_PATH=/tmp/pr_event.json" >> $GITHUB_ENV
 
       - name: Collect checklist and save results
         uses: kotaoue/pr-checklist-collector@main
