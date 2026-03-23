@@ -1,0 +1,41 @@
+name: Manual Save Buzz Cut Results
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to process (e.g. 42)'
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  save-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare event payload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
+            --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}' \
+            > /tmp/pr_event.json || {
+            echo "::error::Failed to fetch PR #${{ inputs.pr_number }}. Verify the PR number exists and is accessible."
+            exit 1
+          }
+          echo "GITHUB_EVENT_PATH=/tmp/pr_event.json" >> $GITHUB_ENV
+
+      - name: Collect checklist and save results
+        uses: kotaoue/pr-checklist-collector@main
+        with:
+          output_file: results/{yyyy-mm-dd}.json
+          pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
+
+      - name: Trigger badge generation
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: buzz-results-saved
