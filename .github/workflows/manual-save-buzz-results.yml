@@ -20,12 +20,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
-            --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}' \
-            > "$GITHUB_EVENT_PATH" || {
+          PAYLOAD=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
+            --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}') || {
             echo "::error::Failed to fetch PR #${{ inputs.pr_number }}. Verify the PR number exists and is accessible."
             exit 1
           }
+          # Write to $GITHUB_EVENT_PATH for non-Docker steps.
+          echo "$PAYLOAD" > "$GITHUB_EVENT_PATH"
+          # Docker actions always read from $RUNNER_TEMP/_github_workflow/event.json
+          # (mapped as /github/workflow/event.json inside the container), which is
+          # a copy made at job-init time and is not updated by writing to $GITHUB_EVENT_PATH.
+          mkdir -p "${RUNNER_TEMP}/_github_workflow"
+          echo "$PAYLOAD" > "${RUNNER_TEMP}/_github_workflow/event.json"
 
       - name: Collect checklist and save results
         uses: kotaoue/pr-checklist-collector@main
