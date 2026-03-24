@@ -45,33 +45,7 @@ jobs:
 
           export OUTPUT_FILE="results/${CHECKLIST_DATE}.json"
           export CHECKLIST_DATE
-          python3 << 'PYEOF'
-          import json, sys, os
-
-          with open('/tmp/pr_data.json') as f:
-              pr = json.load(f)
-
-          body = pr.get('body') or ''
-          checks = {}
-          for line in body.split('\n'):
-              line = line.strip()
-              if line.startswith('- [x] ') or line.startswith('- [X] '):
-                  checks[line[6:]] = True
-              elif line.startswith('- [ ] '):
-                  checks[line[6:]] = False
-
-          if not checks:
-              print('error: no checklist items found in pull request body', file=sys.stderr)
-              sys.exit(1)
-
-          content = json.dumps({'date': os.environ['CHECKLIST_DATE'], 'checks': checks}, indent=2)
-
-          output_file = os.environ['OUTPUT_FILE']
-          os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
-          with open(output_file, 'w') as f:
-              f.write(content)
-          print(f'Written {output_file}')
-          PYEOF
+          python3 .github/scripts/collect_checklist.py
 
           git add "$OUTPUT_FILE"
           git commit -m "Save checklist results"
