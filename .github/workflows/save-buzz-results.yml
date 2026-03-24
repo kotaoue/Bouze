@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Collect checklist and save results
-        uses: kotaoue/pr-checklist-collector@main
+        uses: kotaoue/pr-checklist-collector@b35926af2a4d20de467d7ab8da4ee2d0dc9651b1 # main
         with:
           output_file: results/{yyyy-mm-dd}.json
           pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
 
       - name: Trigger badge generation
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: buzz-results-saved
