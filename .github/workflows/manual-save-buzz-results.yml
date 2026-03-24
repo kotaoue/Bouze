@@ -16,28 +16,66 @@ jobs:
   save-results:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare event payload
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Collect checklist and save results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PAYLOAD=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
-            --jq '{pull_request: {title: .title, body: .body, base: {ref: .base.ref}}}') || {
+          gh api repos/${{ github.repository }}/pulls/${{ inputs.pr_number }} \
+            > /tmp/pr_data.json || {
             echo "::error::Failed to fetch PR #${{ inputs.pr_number }}. Verify the PR number exists and is accessible."
             exit 1
           }
-          # Write to $GITHUB_EVENT_PATH for non-Docker steps.
-          echo "$PAYLOAD" > "$GITHUB_EVENT_PATH"
-          # Docker actions always read from $RUNNER_TEMP/_github_workflow/event.json
-          # (mapped as /github/workflow/event.json inside the container), which is
-          # a copy made at job-init time and is not updated by writing to $GITHUB_EVENT_PATH.
-          mkdir -p "${RUNNER_TEMP}/_github_workflow"
-          echo "$PAYLOAD" > "${RUNNER_TEMP}/_github_workflow/event.json"
 
-      - name: Collect checklist and save results
-        uses: kotaoue/pr-checklist-collector@main
-        with:
-          output_file: results/{yyyy-mm-dd}.json
-          pr_title_pattern: 'Add checklist \(\d{4}-\d{2}-\d{2}\)'
+          PR_TITLE=$(jq -r '.title' /tmp/pr_data.json)
+          BASE_REF=$(jq -r '.base.ref' /tmp/pr_data.json)
+
+          CHECKLIST_DATE=$(echo "$PR_TITLE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          if [ -z "$CHECKLIST_DATE" ]; then
+            echo "info: PR title \"$PR_TITLE\" does not match pattern; skipping"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BASE_REF"
+          git checkout "$BASE_REF"
+
+          export OUTPUT_FILE="results/${CHECKLIST_DATE}.json"
+          export CHECKLIST_DATE
+          python3 << 'PYEOF'
+          import json, sys, os
+
+          with open('/tmp/pr_data.json') as f:
+              pr = json.load(f)
+
+          body = pr.get('body') or ''
+          checks = {}
+          for line in body.split('\n'):
+              line = line.strip()
+              if line.startswith('- [x] ') or line.startswith('- [X] '):
+                  checks[line[6:]] = True
+              elif line.startswith('- [ ] '):
+                  checks[line[6:]] = False
+
+          if not checks:
+              print('error: no checklist items found in pull request body', file=sys.stderr)
+              sys.exit(1)
+
+          content = json.dumps({'date': os.environ['CHECKLIST_DATE'], 'checks': checks}, indent=2)
+
+          output_file = os.environ['OUTPUT_FILE']
+          os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
+          with open(output_file, 'w') as f:
+              f.write(content)
+          print(f'Written {output_file}')
+          PYEOF
+
+          git add "$OUTPUT_FILE"
+          git commit -m "Save checklist results"
+          git push origin "$BASE_REF"
 
       - name: Trigger badge generation
         uses: peter-evans/repository-dispatch@v3
