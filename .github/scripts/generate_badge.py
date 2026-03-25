@@ -17,7 +17,7 @@ BG_COLOR = "#1a1a2e"          # deep navy background
 DAYS_COLOR = "#f5d98b"        # warm light gold for large number
 LABEL_COLOR = "#a89060"       # muted amber for sub-label
 
-BADGE_WIDTH = 200
+BADGE_WIDTH = 80
 BADGE_HEIGHT = 80
 
 
@@ -55,10 +55,11 @@ def generate_svg(days: int | None, last_date: date | None) -> str:
 
     tooltip = f"Last buzz: {last_date.isoformat()}" if last_date else "No records yet"
 
-    # Center text horizontally
+    # Center text horizontally; distribute three rows vertically
     cx = BADGE_WIDTH // 2
-    days_y = BADGE_HEIGHT // 2 - 8
-    label_y = days_y + 24
+    number_y = BADGE_HEIGHT * 35 // 100   # ~35% from top (large number)
+    days_since_y = BADGE_HEIGHT * 62 // 100  # ~62% from top
+    last_buzz_y = BADGE_HEIGHT * 81 // 100   # ~81% from top
 
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg"
      width="{BADGE_WIDTH}" height="{BADGE_HEIGHT}"
@@ -68,15 +69,20 @@ def generate_svg(days: int | None, last_date: date | None) -> str:
   <!-- Background -->
   <rect width="{BADGE_WIDTH}" height="{BADGE_HEIGHT}" rx="10" fill="{BG_COLOR}"/>
   <!-- Days count (large) -->
-  <text x="{cx}" y="{days_y}"
+  <text x="{cx}" y="{number_y}"
         font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="36" font-weight="700" text-anchor="middle"
-        fill="{DAYS_COLOR}" dominant-baseline="middle">{days_text} days</text>
-  <!-- Label (small) -->
-  <text x="{cx}" y="{label_y}"
+        font-size="30" font-weight="700" text-anchor="middle"
+        fill="{DAYS_COLOR}" dominant-baseline="middle">{days_text}</text>
+  <!-- "days since" label -->
+  <text x="{cx}" y="{days_since_y}"
         font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
         font-size="12" font-weight="400" text-anchor="middle"
-        fill="{LABEL_COLOR}" dominant-baseline="middle">since last buzz</text>
+        fill="{LABEL_COLOR}" dominant-baseline="middle">days since</text>
+  <!-- "last buzz" label -->
+  <text x="{cx}" y="{last_buzz_y}"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="12" font-weight="400" text-anchor="middle"
+        fill="{LABEL_COLOR}" dominant-baseline="middle">last buzz</text>
 </svg>"""
     return svg
 
