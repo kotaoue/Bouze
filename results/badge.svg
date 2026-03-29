@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg"
      width="80" height="80"
      viewBox="0 0 80 80"
-     role="img" aria-label="20 days since last buzz">
-  <title>Last buzz: 2026-03-08</title>
+     role="img" aria-label="0 days since last buzz">
+  <title>Last buzz: 2026-03-29</title>
   <!-- Background -->
   <rect width="80" height="80" rx="10" fill="#1a1a2e"/>
   <!-- Days count (large) -->
   <text x="40" y="28"
         font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
         font-size="30" font-weight="700" text-anchor="middle"
-        fill="#f5d98b" dominant-baseline="middle">20</text>
+        fill="#f5d98b" dominant-baseline="middle">0</text>
   <!-- "days since" label -->
   <text x="40" y="49"
         font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
